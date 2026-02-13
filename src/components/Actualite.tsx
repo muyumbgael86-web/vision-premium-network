@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Post, ContentCategory } from '../types';
-import { Send, Image, Video, Newspaper } from 'lucide-react';
+import { Send, Image, Video, Newspaper, Heart, MessageCircle } from 'lucide-react';
 
 interface ActualiteProps {
   newsPosts: Post[];

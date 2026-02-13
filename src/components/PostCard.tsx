@@ -11,6 +11,7 @@ interface PostCardProps {
   onShare: () => void;
   onDelete?: () => void;
   onView?: () => void;
+  isAdmin?: boolean;
 }
 
 const VideoPlayer = memo(({ src, onView, views }: { src: string; onView?: () => void; views?: number }) => {

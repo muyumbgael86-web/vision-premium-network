@@ -59,7 +59,7 @@ async function pushToSupabase(localState: Partial<CloudState>) {
     if (localState.posts?.length) {
       for (const post of localState.posts) {
         const dbPost = transformPostToDB(post);
-        await supabase.from('posts').upsert(dbPost).ignoreDuplicates();
+        await supabase.from('posts').upsert(dbPost);
       }
     }
 
@@ -67,7 +67,7 @@ async function pushToSupabase(localState: Partial<CloudState>) {
     if (localState.users?.length) {
       for (const user of localState.users) {
         const dbUser = transformUserToDB(user);
-        await supabase.from('users').upsert(dbUser).ignoreDuplicates();
+        await supabase.from('users').upsert(dbUser);
       }
     }
 
@@ -75,7 +75,7 @@ async function pushToSupabase(localState: Partial<CloudState>) {
     if (localState.stories?.length) {
       for (const story of localState.stories) {
         const dbStory = transformStoryToDB(story);
-        await supabase.from('stories').upsert(dbStory).ignoreDuplicates();
+        await supabase.from('stories').upsert(dbStory);
       }
     }
 
@@ -83,7 +83,7 @@ async function pushToSupabase(localState: Partial<CloudState>) {
     if (localState.products?.length) {
       for (const product of localState.products) {
         const dbProduct = transformProductToDB(product);
-        await supabase.from('products').upsert(dbProduct).ignoreDuplicates();
+        await supabase.from('products').upsert(dbProduct);
       }
     }
   } catch (error) {
