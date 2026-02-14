@@ -94,6 +94,16 @@ const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onLike, onComm
   const isOwner = post.author.id === currentUserId;
   const hasViewedRef = useRef(false);
 
+  // Theme colors
+  const bgColor = 'bg-white';
+  const borderColor = 'border-gray-200';
+  const textPrimary = 'text-gray-900';
+  const textSecondary = 'text-gray-500';
+  const textTertiary = 'text-gray-400';
+  const hoverBg = 'hover:bg-gray-50';
+  const inputBg = 'bg-gray-50';
+  const cardBg = 'bg-gray-100';
+
   const handleImageClick = () => {
     if (!hasViewedRef.current) {
       onView?.();
@@ -110,25 +120,25 @@ const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onLike, onComm
   };
 
   return (
-    <div className="glass rounded-2xl mb-4 overflow-hidden border border-white/10 relative w-full">
+    <div className={`${bgColor} rounded-2xl mb-4 overflow-hidden border ${borderColor} shadow-sm relative w-full`}>
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src={post.author.avatar} className="w-10 h-10 rounded-full object-cover border border-white/20" alt="" />
+          <img src={post.author.avatar} className="w-10 h-10 rounded-full object-cover border border-gray-200" alt="" />
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="font-semibold text-sm">{post.author.name}</h3>
+              <h3 className={`font-semibold text-sm ${textPrimary}`}>{post.author.name}</h3>
               {post.author.isVerified && <CheckCircle2 className="w-4 h-4 text-indigo-500" />}
             </div>
-            <p className="text-[10px] text-zinc-500">{formatTimeAgo(post.timestamp)}</p>
+            <p className="text-[10px] text-gray-400">{formatTimeAgo(post.timestamp)}</p>
           </div>
         </div>
-        <button className="p-2 text-zinc-400 hover:bg-white/5 rounded-lg transition-colors"><MoreHorizontal className="w-5 h-5" /></button>
+        <button className={`p-2 ${textTertiary} ${hoverBg} rounded-lg transition-colors`}><MoreHorizontal className="w-5 h-5" /></button>
       </div>
 
       <div className="px-4 pb-3">
-        {post.title && <h4 className="font-bold text-base mb-1">{post.title}</h4>}
-        <p className="text-sm text-zinc-300">{post.caption}</p>
-        {post.category && <span className="inline-block text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full mt-2">{post.category}</span>}
+        {post.title && <h4 className="font-bold text-base mb-1 text-gray-900">{post.title}</h4>}
+        <p className="text-sm text-gray-600">{post.caption}</p>
+        {post.category && <span className="inline-block text-[10px] bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full mt-2">{post.category}</span>}
       </div>
 
       <div className="relative">
@@ -142,42 +152,42 @@ const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onLike, onComm
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex gap-6">
-            <button onClick={onLike} className={`flex items-center gap-2 transition-colors ${isLiked ? 'text-rose-500' : 'text-zinc-400'}`}>
+            <button onClick={onLike} className={`flex items-center gap-2 transition-colors ${isLiked ? 'text-rose-500' : 'text-gray-400'}`}>
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
               <span className="text-xs font-medium">{post.likes.length}</span>
             </button>
-            <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-2 text-zinc-400">
+            <button onClick={() => setShowComments(!showComments)} className={`flex items-center gap-2 ${textSecondary}`}>
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs font-medium">{post.comments.length}</span>
             </button>
-            <button onClick={onShare} className="flex items-center gap-2 text-zinc-400">
+            <button onClick={onShare} className={`flex items-center gap-2 ${textSecondary}`}>
               <Share2 className="w-5 h-5" />
               <span className="text-xs font-medium">{post.shares}</span>
             </button>
           </div>
-          <button className="text-zinc-400"><Download className="w-5 h-5" /></button>
+          <button className={textSecondary}><Download className="w-5 h-5" /></button>
         </div>
 
         {showComments && (
-          <div className="space-y-3 mt-4 pt-4 border-t border-white/10">
+          <div className="space-y-3 mt-4 pt-4 border-t border-gray-100">
             <div className="space-y-3 max-h-48 overflow-y-auto">
               {post.comments.length === 0 ? (
-                <p className="text-xs text-center text-zinc-500 py-2">Aucun commentaire</p>
+                <p className="text-xs text-center text-gray-400 py-2">Aucun commentaire</p>
               ) : (
                 post.comments.map((comment) => (
                   <div key={comment.id} className="flex gap-2">
                     <img src={comment.userAvatar} className="w-8 h-8 rounded-full" alt="" />
-                    <div className="flex-1 bg-white/5 rounded-xl p-3">
-                      <p className="text-xs font-medium">{comment.userName}</p>
-                      <p className="text-xs text-zinc-400">{comment.text}</p>
+                    <div className={`flex-1 ${inputBg} rounded-xl p-3`}>
+                      <p className="text-xs font-medium text-gray-900">{comment.userName}</p>
+                      <p className="text-xs text-gray-500">{comment.text}</p>
                     </div>
                   </div>
                 ))
               )}
             </div>
             <form onSubmit={submitComment} className="flex gap-2 mt-3">
-              <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Commenter..." className="flex-1 bg-white/5 rounded-full px-4 py-2 text-sm outline-none border border-white/10" />
-              <button type="submit" disabled={!commentText.trim()} className="p-2 bg-indigo-600 rounded-full disabled:opacity-50"><Send className="w-4 h-4" /></button>
+              <input value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Commenter..." className={`flex-1 ${inputBg} rounded-full px-4 py-2 text-sm outline-none border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200`} />
+              <button type="submit" disabled={!commentText.trim()} className="p-2 bg-indigo-600 rounded-full disabled:opacity-50 text-white"><Send className="w-4 h-4" /></button>
             </form>
           </div>
         )}

@@ -49,7 +49,15 @@ const AppContent: React.FC = () => {
 
   const [messages, setMessages] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<VisionNotification[]>([]);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('vision_theme');
+    return (saved as 'light' | 'dark') || 'dark';
+  });
+
+  // Save theme preference
+  useEffect(() => {
+    localStorage.setItem('vision_theme', theme);
+  }, [theme]);
 
   const syncEngine = useCallback(async () => {
     if (!user) return;
