@@ -40,17 +40,29 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
       {/* Glass Header */}
       <header className={`fixed top-0 left-0 right-0 z-50 glass-header ${theme === 'dark' ? '' : ''}`}>
         <div className="flex items-center justify-between h-16 px-4">
-          {/* Left: V Logo + Vision */}
+          {/* Left: Profile Photo + V Logo + Vision */}
           <div className="flex items-center gap-2">
+            {/* Profile Photo */}
+            <button
+              onClick={() => window.location.href = '/profile'}
+              className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300 hover:ring-indigo-500 transition-all"
+            >
+              <img
+                src={user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            </button>
+            
             {/* V Logo */}
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+            <div className="w-9 h-9 rounded-xl bg-black flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-lg">V</span>
             </div>
             
             {/* Logo Text */}
             <div className="flex items-center">
-              <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent">Vision</span>
+              <h1 className="text-xl font-bold text-gray-900">
+                <span className="bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Vision</span>
               </h1>
             </div>
           </div>
@@ -147,15 +159,15 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                   >
                     {theme === 'light' ? (
                       <>
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
                           <Moon className="w-4 h-4 text-white" />
                         </div>
                         <span className="text-gray-900">Mode Sombre</span>
                       </>
                     ) : (
                       <>
-                        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center">
-                          <Sun className="w-4 h-4 text-white" />
+                        <div className="w-8 h-8 rounded-lg bg-yellow-400 flex items-center justify-center">
+                          <Sun className="w-4 h-4 text-gray-900" />
                         </div>
                         <span className="text-white">Mode Clair</span>
                       </>
@@ -167,7 +179,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                     onClick={onLogout}
                     className={`w-full flex items-center gap-3 p-3 ${theme === 'dark' ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-600'} transition-colors`}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center">
                       <LogOut className="w-4 h-4 text-white" />
                     </div>
                     <span>Déconnexion</span>
@@ -200,7 +212,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                        ? 'bg-gray-900 text-white shadow-lg'
                         : `${theme === 'dark' ? 'hover:bg-white/10 text-gray-300' : 'hover:bg-gray-100 text-gray-700'}`
                     }`
                   }
@@ -230,7 +242,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
             className={({ isActive }) =>
               `p-3 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? 'bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
+                  ? 'bg-gray-900 text-white shadow-lg'
                   : `${theme === 'dark' ? 'hover:bg-white/10 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`
               }`
             }
@@ -250,7 +262,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-300 ${
                   isActive
-                    ? 'text-indigo-600 dark:text-indigo-400'
+                    ? 'text-gray-900'
                     : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
                 }`}
             >
@@ -263,11 +275,11 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
             className={({ isActive }) =>
               `flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-300 ${
                 isActive
-                  ? 'text-indigo-600 dark:text-indigo-400'
+                  ? 'text-gray-900'
                   : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
               }`}
           >
-            <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-indigo-500">
+            <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-gray-300">
               <img
                 src={user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
                 alt={user.name}
@@ -283,10 +295,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
       <style>{`
         /* Glass Header */
         .glass-header {
-          background: rgba(255, 255, 255, 0.7);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+          border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
         .dark .glass-header {
           background: rgba(17, 24, 39, 0.8);
@@ -298,7 +310,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
           background: rgba(255, 255, 255, 0.6);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
+          border: 1px solid rgba(0, 0, 0, 0.1);
         }
         .dark .glass-search {
           background: rgba(31, 41, 55, 0.6);
@@ -310,7 +322,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
           background: rgba(255, 255, 255, 0.5);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(0, 0, 0, 0.1);
         }
         .dark .glass-button {
           background: rgba(31, 41, 55, 0.5);
@@ -325,7 +337,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
         
         /* Glass Navigation */
         .glass-nav {
-          background: rgba(255, 255, 255, 0.75);
+          background: rgba(255, 255, 255, 0.85);
           backdrop-filter: blur(24px);
           -webkit-backdrop-filter: blur(24px);
         }

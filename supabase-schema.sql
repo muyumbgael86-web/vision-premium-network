@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS users (
   education TEXT,
   is_admin BOOLEAN DEFAULT FALSE,
   is_verified BOOLEAN DEFAULT FALSE,
-  certification_status TEXT DEFAULT 'none' CHECK (certification_status IN ('none', 'pending', 'approved', 'rejected')),
   followers TEXT[] DEFAULT '{}',
   following TEXT[] DEFAULT '{}',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -129,42 +128,11 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_lives_streamer ON lives(streamer_id);
 
 -- ============================================
--- REALTIME SUBSCRIPTIONS
--- Enable Realtime for these tables:
--- 1. Allez dans: Database > Replication
--- 2. Activez "Realtime" pour les tables:
---    - posts
---    - stories  
---    - messages
---    - notifications
---    - lives
--- ============================================
-
--- ============================================
--- ROW LEVEL SECURITY (RLS) - OPTIONAL
--- ============================================
--- Pour sécuriser l'accès aux données:
-
--- ENABLE RLS ON TABLES
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-ALTER TABLE lives ENABLE ROW LEVEL SECURITY;
-
--- CREATE POLICIES (exemples)
--- CREATE POLICY "Public posts are viewable by everyone" ON posts FOR SELECT USING (true);
--- CREATE POLICY "Users can insert their own posts" ON posts FOR INSERT WITH CHECK (auth.uid() = author_id);
--- CREATE POLICY "Users can update their own posts" ON posts FOR UPDATE USING (auth.uid() = author_id);
-
--- ============================================
 -- SAMPLE DATA - INSERT DEFAULT USER
 -- ============================================
-INSERT INTO users (id, name, username, avatar, is_verified, certification_status)
+INSERT INTO users (id, name, username, avatar, is_verified)
 VALUES 
-  ('user-1', 'Vision User', 'vision_user', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', true, 'approved')
+  ('user-1', 'Vision User', 'vision_user', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
@@ -175,6 +143,17 @@ VALUES
   ('post-1', 'user-1', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', 'image', 'https://picsum.photos/seed/vision1/1080/1080', 'Bienvenue sur Vision! Une nouvelle expérience sociale.', ARRAY[]::TEXT[], '[]'::jsonb, 0, 1000, EXTRACT(EPOCH FROM NOW())::BIGINT),
   ('post-2', 'user-1', 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', 'reel', 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4', 'Découvrez les nouvelles fonctionnalités!', ARRAY[]::TEXT[], '[]'::jsonb, 0, 500, EXTRACT(EPOCH FROM NOW())::BIGINT - 3600)
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================
+-- REALTIME SUBSCRIPTIONS (ACTIVEZ MANUELLEMENT)
+-- Allez dans: Database > Replication
+-- Activez "Realtime" pour les tables:
+-- - posts
+-- - stories  
+-- - messages
+-- - notifications
+-- - lives
+-- ============================================
 
 -- ============================================
 -- FUNCTION TO AUTO-UPDATE TIMESTAMP
@@ -193,9 +172,4 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
 -- END OF SCHEMA
--- ============================================
--- Après avoir exécuté ce script:
--- 1. Allez dans Settings > API
--- 2. Copiez l'URL et la clé anon
--- 3. Mettez à jour supabaseClient.ts avec vos credentials
 -- ============================================
