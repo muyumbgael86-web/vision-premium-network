@@ -6,13 +6,14 @@ export interface User {
   avatar: string;
   username: string;
   email?: string;
+  bio?: string;
   isAdmin?: boolean;
   isVerified?: boolean;
   certificationStatus?: 'none' | 'pending' | 'approved' | 'rejected';
   certificationData?: { category: string; reason: string; proof: string };
   followers: string[];
   following: string[];
-  relationship?: 'Célibataire' | 'Marié' | 'Veuf';
+  relationship?: 'Célibataire' | 'En couple' | 'Marié(e)' | 'Divorcé(e)' | 'Veuf(ve)' | 'En instance de divorce' | 'En cohabitation' | 'Union libre';
   religion?: string;
   education?: string;
   city?: string;
