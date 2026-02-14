@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Compass, Heart, MessageCircle, ShoppingBag, Video, User, Settings, LogOut, Moon, Sun, Bell, Search, Menu, X } from 'lucide-react';
 import { User as UserType, VisionNotification } from '../types';
 
@@ -15,6 +15,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifications, onClearNotifications, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showSettings, setShowSettings] = React.useState(false);
   const [showMobileMenu, setShowMobileMenu] = React.useState(false);
@@ -22,10 +23,14 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
 
   const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
+  const handleGoProfile = () => {
+    navigate('/profile');
+  };
+
   const navItems = [
     { path: '/', icon: Home, label: 'Accueil' },
     { path: '/reels', icon: Compass, label: 'Reels' },
-    { path: '/actualite', icon: Search, label: 'Actualité' },
+    { path: '/actualite', icon: Search, label: 'Actualite' },
     { path: '/shop', icon: ShoppingBag, label: 'Boutique' },
     { path: '/messenger', icon: MessageCircle, label: 'Messages' },
     { path: '/live', icon: Video, label: 'Live' },
@@ -36,16 +41,16 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
   const isLivePage = location.pathname === '/live';
 
   return (
-    <div className={`${theme === 'dark' ? 'dark bg-gray-900' : 'bg-gray-50'} min-h-screen transition-colors duration-300`}>
+    <div className={`${theme === 'dark' ? 'dark' : ''} min-h-screen transition-colors duration-300`}>
       {/* Glass Header */}
-      <header className={`fixed top-0 left-0 right-0 z-50 glass-header ${theme === 'dark' ? '' : ''}`}>
+      <header className={`fixed top-0 left-0 right-0 z-50 glass-header`}>
         <div className="flex items-center justify-between h-16 px-4">
           {/* Left: Profile Photo + V Logo + Vision */}
           <div className="flex items-center gap-2">
-            {/* Profile Photo */}
+            {/* Profile Photo - Fixed to navigate properly */}
             <button
-              onClick={() => window.location.href = '/profile'}
-              className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300 hover:ring-indigo-500 transition-all"
+              onClick={handleGoProfile}
+              className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300 hover:ring-indigo-500 transition-all cursor-pointer"
             >
               <img
                 src={user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
@@ -70,8 +75,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
           {/* Center: Search Bar - Hidden on small screens */}
           <div className={`hidden md:flex flex-1 max-w-md mx-4 ${isSearching ? '' : 'justify-center'}`}>
             {isSearching ? (
-              <div className={`flex items-center w-full px-4 py-2 rounded-full glass-search ${theme === 'dark' ? '' : ''}`}>
-                <Search className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mr-2`} />
+              <div className={`flex items-center w-full px-4 py-2 rounded-full glass-search`}>
+                <Search className="w-5 h-5 text-gray-500 mr-2" />
                 <input
                   type="text"
                   placeholder="Rechercher..."
@@ -79,7 +84,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                   onBlur={() => setIsSearching(false)}
                   className={`flex-1 bg-transparent outline-none ${theme === 'dark' ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'}`}
                 />
-                <button onClick={() => setIsSearching(false)} className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                <button onClick={() => setIsSearching(false)} className="text-gray-500">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -88,8 +93,8 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                 onClick={() => setIsSearching(true)}
                 className={`flex items-center px-4 py-2 rounded-full glass-search ${theme === 'dark' ? 'hover:bg-white/10' : 'hover:bg-white/60'} transition-colors`}
               >
-                <Search className={`w-4 h-4 mr-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
-                <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Rechercher...</span>
+                <Search className="w-4 h-4 mr-2 text-gray-500" />
+                <span className="text-sm text-gray-500">Rechercher...</span>
               </button>
             )}
           </div>
@@ -174,7 +179,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                     )}
                   </button>
 
-                  {/* Déconnexion */}
+                  {/* Deconnexion */}
                   <button
                     onClick={onLogout}
                     className={`w-full flex items-center gap-3 p-3 ${theme === 'dark' ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-600'} transition-colors`}
@@ -182,7 +187,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                     <div className="w-8 h-8 rounded-lg bg-red-500 flex items-center justify-center">
                       <LogOut className="w-4 h-4 text-white" />
                     </div>
-                    <span>Déconnexion</span>
+                    <span>Deconnexion</span>
                   </button>
                 </div>
               )}
@@ -234,7 +239,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
       </main>
 
       {/* Glass Desktop Navigation - Hidden on mobile */}
-      <nav className={`hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 glass-nav ${theme === 'dark' ? '' : ''} rounded-2xl shadow-2xl shadow-black/20 border border-white/20 px-3 py-2 gap-1 z-50`}>
+      <nav className={`hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 glass-nav rounded-2xl shadow-2xl shadow-black/20 border border-white/20 px-3 py-2 gap-1 z-50`}>
         {navItems.slice(0, 6).map((item) => (
           <NavLink
             key={item.path}
@@ -253,7 +258,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
       </nav>
 
       {/* Glass Mobile Bottom Navigation */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 glass-nav ${theme === 'dark' ? '' : ''} border-t border-white/20 z-50`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 glass-nav border-t border-white/20 z-50`}>
         <div className="flex justify-around py-2">
           {navItems.slice(0, 5).map((item) => (
             <NavLink
@@ -264,20 +269,20 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
                   isActive
                     ? 'text-gray-900'
                     : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
-                }`}
+                }`
+              }
             >
               <item.icon className="w-5 h-5" />
               <span className="text-xs">{item.label}</span>
             </NavLink>
           ))}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-300 ${
-                isActive
-                  ? 'text-gray-900'
-                  : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
-              }`}
+          <button
+            onClick={handleGoProfile}
+            className={`flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all duration-300 ${
+              location.pathname === '/profile'
+                ? 'text-gray-900'
+                : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
+            }`}
           >
             <div className="w-7 h-7 rounded-full overflow-hidden ring-2 ring-gray-300">
               <img
@@ -287,7 +292,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
               />
             </div>
             <span className="text-xs">Profil</span>
-          </NavLink>
+          </button>
         </div>
       </nav>
 
@@ -301,7 +306,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
           border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         }
         .dark .glass-header {
-          background: rgba(17, 24, 39, 0.8);
+          background: rgba(15, 23, 42, 0.95);
           border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
@@ -342,7 +347,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifi
           -webkit-backdrop-filter: blur(24px);
         }
         .dark .glass-nav {
-          background: rgba(17, 24, 39, 0.85);
+          background: rgba(15, 23, 42, 0.95);
         }
         
         /* Smooth transitions */
