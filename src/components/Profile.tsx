@@ -103,8 +103,8 @@ const Profile: React.FC<ProfileProps> = ({ user, userPosts, onUpdateUser, onPost
             onChange={handleAvatarChange}
             className="hidden"
           />
-          {/* Verified Badge - Always visible for this user */}
-          <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-indigo-500 to-purple-500 p-1.5 rounded-full shadow-lg">
+          {/* Verified Badge - Green for certification */}
+          <div className="absolute -bottom-1 -right-1 bg-gradient-to-br from-green-400 to-emerald-500 p-1.5 rounded-full shadow-lg">
             <CheckCircle2 className="w-6 h-6 text-white" />
           </div>
         </div>
@@ -177,7 +177,7 @@ const Profile: React.FC<ProfileProps> = ({ user, userPosts, onUpdateUser, onPost
               <h2 className="text-xl font-bold text-gray-900">
                 {user.name || `${user.firstName} ${user.lastName}`}
               </h2>
-              <div className="bg-gradient-to-br from-indigo-500 to-purple-500 p-0.5 rounded-full">
+              <div className="bg-gradient-to-br from-green-400 to-emerald-500 p-0.5 rounded-full">
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
             </div>

@@ -40,7 +40,7 @@ const AnimatedLikeButton: React.FC<{ isLiked: boolean; count: number; onLike: ()
         <Heart
           className={`w-6 h-6 transition-all duration-300 ${
             isLiked
-              ? 'fill-current text-green-500 scale-110'
+              ? 'fill-current text-red-500 scale-110'
               : 'text-gray-400'
           } ${animate ? 'animate-heart-burst' : ''}`}
         />
@@ -52,7 +52,7 @@ const AnimatedLikeButton: React.FC<{ isLiked: boolean; count: number; onLike: ()
           />
         ))}
       </div>
-      <span className={`text-sm font-medium transition-all duration-300 ${isLiked ? 'text-green-500' : 'text-gray-500'}`}>
+      <span className={`text-sm font-medium transition-all duration-300 ${isLiked ? 'text-red-500' : 'text-gray-500'}`}>
         {count > 999 ? `${(count / 1000).toFixed(1)}K` : count}
       </span>
     </button>
