@@ -126,6 +126,10 @@ const AppContent: React.FC = () => {
     ));
   };
 
+  const handleUpdateUser = (updatedUser: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updatedUser } : null);
+  };
+
   const logout = () => {
     localStorage.removeItem(STORAGE_KEY);
     setUser(null);
