@@ -363,7 +363,11 @@ const PostCard: React.FC<PostCardProps> = ({ post, currentUserId, onLike, onComm
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className={`font-semibold text-base ${textPrimary}`}>{post.author.name}</h3>
-                {post.author.isVerified && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                {post.author.isVerified && (
+                  <div className="verified-glow">
+                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  </div>
+                )}
               </div>
               <p className="text-xs text-gray-400 dark:text-gray-500">{formatTimeAgo(post.timestamp)}</p>
             </div>
