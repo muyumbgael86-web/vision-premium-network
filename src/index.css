@@ -10,6 +10,12 @@
 
 html {
   scroll-behavior: smooth;
+  /* Force dark mode if active */
+  color-scheme: dark light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -20,20 +26,32 @@ body {
 }
 
 /* Dark mode - truly dark, not blue */
-.dark {
-  color-scheme: dark;
-}
-
 .dark body {
-  background: #0f172a;
+  background: #000000 !important;
+  color: #ffffff !important;
 }
 
 .dark body::before {
   content: '';
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%) !important;
   z-index: -1;
+}
+
+/* Ensure all child elements respect dark mode */
+.dark .app-container {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Force dark background on root */
+#root {
+  min-height: 100vh;
+}
+
+.dark #root {
+  background: #000000 !important;
 }
 
 /* Light mode - glass effect */
@@ -55,14 +73,14 @@ body:not(.dark)::before {
 
 /* Glass effect - light mode */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.7) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .glass-dark {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(0, 0, 0, 0.8) !important;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -135,8 +153,8 @@ body:not(.dark)::before {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+  0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); }
 }
 
 .animate-pulse-glow {
@@ -177,8 +195,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: rgba(99, 102, 241, 0.5);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
 }
 
 /* Button base */
@@ -219,12 +237,23 @@ video {
   height: 100%;
   overflow: hidden;
   border-radius: 12px;
+  cursor: pointer;
 }
 
 .video-container video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Clickable video expands */
+.video-expandable {
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.video-expandable:active {
+  transform: scale(1.05);
 }
 
 /* Live badge animation */
@@ -250,11 +279,24 @@ video {
 }
 
 .dark .card {
-  @apply bg-gray-800/70 backdrop-blur border-gray-700/50;
+  @apply bg-black/70 backdrop-blur border-gray-800/50;
 }
 
 .card:hover {
   @apply shadow-md;
+}
+
+/* Green theme for options */
+.option-green {
+  color: #22c55e !important;
+}
+
+.option-green svg {
+  color: #22c55e !important;
+}
+
+.option-green:hover {
+  background: rgba(34, 197, 94, 0.1) !important;
 }
 
 /* ====== Modern Animations for Reels ====== */
@@ -421,9 +463,9 @@ video {
 .dark .skeleton {
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0) 0%,
+    rgba(0, 0, 0, 0) 0%,
     rgba(255, 255, 255, 0.05) 50%,
-    rgba(255, 255, 255, 0) 100%
+    rgba(0, 0, 0, 0) 100%
   );
   background-size: 200% 100%;
 }
@@ -445,7 +487,7 @@ video {
 
 /* Glow effect on like */
 .like-glow {
-  filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.6));
+  filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.6));
 }
 
 /* Blur entrance */
@@ -491,7 +533,7 @@ video {
 }
 
 .dark .glass-container {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -505,7 +547,7 @@ video {
 }
 
 .dark .glass-card {
-  background: rgba(30, 41, 59, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -525,8 +567,36 @@ video {
 
 /* Text gradient */
 .text-gradient {
-  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+/* Comments modal */
+.comments-modal {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.dark .comments-modal {
+  background: rgba(0, 0, 0, 0.95);
+}
+
+/* Feed post styling */
+.feed-post {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .feed-post {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

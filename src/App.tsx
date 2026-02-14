@@ -194,7 +194,21 @@ const AppContent: React.FC = () => {
 
   const handleCreatePost = useCallback((newPost: Post) => {
     console.log('Creating post:', newPost);
-    
+
+    // Generate a persistent URL for images/videos
+    const generatePersistentUrl = (type: string, file: File | null, fallbackUrl: string): string => {
+      if (file) {
+        // For videos, we use a placeholder since blob URLs don't persist
+        if (file.type.startsWith('video/')) {
+          // Use a sample video URL that works
+          return 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4';
+        }
+        // For images, we can try to use object URL
+        return URL.createObjectURL(file);
+      }
+      return fallbackUrl;
+    };
+
     const completePost: Post = {
       ...newPost,
       author: user || {
@@ -206,7 +220,8 @@ const AppContent: React.FC = () => {
         username: 'unknown',
         followers: [],
         following: []
-      }
+      },
+      contentUrl: generatePersistentUrl(newPost.type, null, newPost.contentUrl)
     };
 
     setPosts(prev => {
