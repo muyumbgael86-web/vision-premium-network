@@ -23,7 +23,7 @@ const STORAGE_KEY = 'VISION_PERSISTENT_SESSION';
 const INITIAL_POSTS: Post[] = [
   {
     id: 'demo-1',
-    author: { id: 'demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
+    author: { id: 'demo', firstName: 'Vision', lastName: 'Demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
     type: 'image',
     contentUrl: 'https://picsum.photos/seed/vision1/1080/1080',
     caption: 'Bienvenue sur Vision! La nouvelle application sociale.',
@@ -35,7 +35,7 @@ const INITIAL_POSTS: Post[] = [
   },
   {
     id: 'demo-2',
-    author: { id: 'demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
+    author: { id: 'demo', firstName: 'Vision', lastName: 'Demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
     type: 'reel',
     contentUrl: 'https://sample-videos.com/video321/mp4/720/big_buck_bunny_720p_1mb.mp4',
     caption: 'Decouvrez les Reels sur Vision!',
@@ -50,7 +50,7 @@ const INITIAL_POSTS: Post[] = [
 const INITIAL_STORIES: Story[] = [
   {
     id: 'story-1',
-    user: { id: 'demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
+    user: { id: 'demo', firstName: 'Vision', lastName: 'Demo', name: 'Vision Demo', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop', username: 'vision_demo', followers: [], following: [] },
     imageUrl: 'https://picsum.photos/seed/story1/1080/1920',
     type: 'image',
     viewed: false,
@@ -154,7 +154,6 @@ const AppContent: React.FC = () => {
 
       const cloudData = await syncWithCloud(localState);
       if (cloudData) {
-        // Only update if we have data from cloud
         if (cloudData.posts.length > 0) {
           setPosts(cloudData.posts);
         }
@@ -169,7 +168,6 @@ const AppContent: React.FC = () => {
         }
       }
 
-      // Auto-verify admin user
       if (user.email === 'abrahamluboya2@gmail.com' && !user.isVerified) {
         setUser(prev => prev ? { ...prev, isVerified: true, isAdmin: true } : null);
       }
@@ -179,15 +177,13 @@ const AppContent: React.FC = () => {
     setIsSyncing(false);
   }, [user, posts, stories, products, messages]);
 
-  // Initial sync and periodic sync
   useEffect(() => {
     if (!user) return;
     syncEngine();
-    const interval = setInterval(syncEngine, 60000); // Sync every minute
+    const interval = setInterval(syncEngine, 60000);
     return () => clearInterval(interval);
   }, [user, syncEngine]);
 
-  // Save user session
   useEffect(() => {
     if (user) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
@@ -199,40 +195,38 @@ const AppContent: React.FC = () => {
   const handleCreatePost = useCallback((newPost: Post) => {
     console.log('Creating post:', newPost);
     
-    // Create a complete post object with author
     const completePost: Post = {
       ...newPost,
-      author: user ? {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-        username: user.username || user.name,
-        followers: user.followers || [],
-        following: user.following || []
-      } : newPost.author
+      author: user || {
+        id: 'unknown',
+        firstName: '',
+        lastName: '',
+        name: 'Unknown',
+        avatar: '',
+        username: 'unknown',
+        followers: [],
+        following: []
+      }
     };
 
-    // Add to posts array - new posts go to the beginning
     setPosts(prev => {
       const updated = [completePost, ...prev];
       localStorage.setItem('vision_posts', JSON.stringify(updated));
       return updated;
     });
 
-    // Close modal
     setIsUploadOpen(false);
 
-    // Add notification
     const notification: VisionNotification = {
       id: Date.now().toString(),
-      type: 'share',
-      message: 'Votre publication a ete enregistree!',
+      type: 'system',
+      title: 'Publication',
+      message: 'Votre publication a ete enregistree avec succes!',
       timestamp: 'A l\'instant',
       read: false
     };
     setNotifications(prev => [notification, ...prev]);
 
-    // Trigger sync
     setTimeout(() => {
       syncEngine();
     }, 1000);
@@ -281,14 +275,16 @@ const AppContent: React.FC = () => {
   const handleCreateStory = useCallback((newStory: Story) => {
     const completeStory: Story = {
       ...newStory,
-      user: user ? {
-        id: user.id,
-        name: user.name,
-        avatar: user.avatar,
-        username: user.username || user.name,
-        followers: user.followers || [],
-        following: user.following || []
-      } : newStory.user
+      user: user || {
+        id: 'unknown',
+        firstName: '',
+        lastName: '',
+        name: 'Unknown',
+        avatar: '',
+        username: 'unknown',
+        followers: [],
+        following: []
+      }
     };
 
     setStories(prev => [completeStory, ...prev]);
@@ -301,7 +297,6 @@ const AppContent: React.FC = () => {
     navigate('/');
   }, [navigate]);
 
-  // Show loading or auth if no user
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -369,7 +364,6 @@ const AppContent: React.FC = () => {
           <Shop 
             products={products} 
             onProductsUpdate={setProducts} 
-            user={user}
           />
         } />
         <Route path="/messenger" element={<Messenger user={user} />} />
@@ -391,7 +385,6 @@ const AppContent: React.FC = () => {
         <Route path="/admin" element={<AdminDashboard user={user} />} />
       </Routes>
 
-      {/* Floating create button */}
       <button
         onClick={() => setIsUploadOpen(true)}
         className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-full flex items-center justify-center shadow-xl shadow-black/30 hover:scale-110 active:scale-95 transition-all z-[60]"
@@ -399,7 +392,6 @@ const AppContent: React.FC = () => {
         <Plus className="w-6 h-6" />
       </button>
 
-      {/* Upload Modal */}
       {isUploadOpen && (
         <UploadModal
           user={user}
@@ -409,7 +401,6 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      {/* Story Viewer */}
       {activeStoryUserId && (
         <StoryViewer 
           stories={stories.filter(s => s.user.id === activeStoryUserId)} 
