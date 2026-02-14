@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Image, Video, Smile, X, Instagram, Film, MessageSquare } from 'lucide-react';
+import { Upload, Image, Video, X, Instagram, Film, MessageSquare, Globe, Sparkles, Zap, ArrowRight, Heart, Share2, MessageCircle } from 'lucide-react';
 import { Post, Story } from '../types';
 
 interface UploadModalProps {
@@ -9,7 +9,7 @@ interface UploadModalProps {
   onStoryCreated: (story: Story) => void;
 }
 
-type UploadType = 'post' | 'story' | 'reel' | 'video';
+type UploadType = 'post' | 'story' | 'reel' | 'video' | 'news';
 
 const CURRENCIES = [
   { code: 'ZAR', name: 'Rand (Afrique du Sud)', symbol: 'R' },
@@ -18,43 +18,12 @@ const CURRENCIES = [
   { code: 'GBP', name: 'Livre (UK)', symbol: '£' },
   { code: 'CDF', name: 'Franc Congolais', symbol: 'FC' },
   { code: 'XOF', name: 'Franc CFA (Afrique)', symbol: 'CFA' },
-  { code: 'XAF', name: 'Franc CFA (CEEAC)', symbol: 'FCFA' },
   { code: 'NGN', name: 'Naira (Nigeria)', symbol: '₦' },
   { code: 'KES', name: 'Shilling (Kenya)', symbol: 'KSh' },
-  { code: 'GHS', name: 'Cedi (Ghana)', symbol: '₵' },
-  { code: 'MAD', name: 'Dirham (Maroc)', symbol: 'DH' },
-  { code: 'TND', name: 'Dinar (Tunisie)', symbol: 'DT' },
-  { code: 'DZD', name: 'Dinar (Algérie)', symbol: 'DA' },
-  { code: 'EGP', name: 'Livre (Egypte)', symbol: 'E£' },
-  { code: 'SAR', name: 'Riyal (Arabie)', symbol: '﷼' },
-  { code: 'AED', name: 'Dirham (UAE)', symbol: 'د.إ' },
-  { code: 'INR', name: 'Roupie (Inde)', symbol: '₹' },
-  { code: 'CNY', name: 'Yuan ( Chine)', symbol: '¥' },
-  { code: 'JPY', name: 'Yen (Japon)', symbol: '¥' },
-  { code: 'KRW', name: 'Won (Corée)', symbol: '₩' },
-  { code: 'BRL', name: 'Real (Brésil)', symbol: 'R$' },
-  { code: 'ARS', name: 'Peso (Argentine)', symbol: '$' },
-  { code: 'MXN', name: 'Peso (Mexique)', symbol: '$' },
-  { code: 'CAD', name: 'Dollar (Canada)', symbol: 'C$' },
-  { code: 'AUD', name: 'Dollar (Australie)', symbol: 'A$' },
-  { code: 'CHF', name: 'Franc (Suisse)', symbol: 'CHF' },
-  { code: 'RUB', name: 'Rouble (Russie)', symbol: '₽' },
-  { code: 'TRY', name: 'Lire (Turquie)', symbol: '₺' },
-  { code: 'PLN', name: 'Zloty (Pologne)', symbol: 'zł' },
-  { code: 'CZK', name: 'Couronne (Rép.Tchèque)', symbol: 'Kč' },
-  { code: 'SEK', name: 'Couronne (Suède)', symbol: 'kr' },
-  { code: 'NOK', name: 'Couronne (Norvège)', symbol: 'kr' },
-  { code: 'DKK', name: 'Couronne (Danemark)', symbol: 'kr' },
-  { code: 'NZD', name: 'Dollar (NZ)', symbol: 'NZ$' },
-  { code: 'ZMW', name: 'Kwacha (Zambie)', symbol: 'ZK' },
-  { code: 'MWK', name: 'Kwacha (Malawi)', symbol: 'MK' },
-  { code: 'BWP', name: 'Pula (Botswana)', symbol: 'P' },
-  { code: 'MZN', name: 'Metical (Mozambique)', symbol: 'MT' },
-  { code: 'SZL', name: 'Lilangeni (Eswatini)', symbol: 'L' },
-  { code: 'LSL', name: 'Loti (Lesotho)', symbol: 'L' },
 ];
 
 const UploadModal: React.FC<UploadModalProps> = ({ user, onClose, onPostCreated, onStoryCreated }) => {
+  const [step, setStep] = useState<'selection' | 'create'>('selection');
   const [uploadType, setUploadType] = useState<UploadType | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [contentUrl, setContentUrl] = useState('');
@@ -65,18 +34,36 @@ const UploadModal: React.FC<UploadModalProps> = ({ user, onClose, onPostCreated,
   const [isUploading, setIsUploading] = useState(false);
   const [category, setCategory] = useState<string>('');
   const [source, setSource] = useState('');
-  
-  // Shop specific
-  const [productName, setProductName] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [productCurrency, setProductCurrency] = useState('USD');
-  const [productDescription, setProductDescription] = useState('');
+  const [dragActive, setDragActive] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
+      const fileUrl = URL.createObjectURL(file);
+      setPreviewUrl(fileUrl);
+      setContentUrl(fileUrl);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
       setSelectedFile(file);
       const fileUrl = URL.createObjectURL(file);
       setPreviewUrl(fileUrl);
@@ -102,8 +89,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ user, onClose, onPostCreated,
       finalUrl = previewUrl || contentUrl;
     }
 
-    // If it's a news category, create a post with category
-    if (uploadType === 'post' && category) {
+    if (uploadType === 'news') {
       const newPost: Post = {
         id: Date.now().toString(),
         author: user,
@@ -159,6 +145,20 @@ const UploadModal: React.FC<UploadModalProps> = ({ user, onClose, onPostCreated,
         timestamp: Date.now()
       };
       onStoryCreated(newStory);
+    } else {
+      const newPost: Post = {
+        id: Date.now().toString(),
+        author: user,
+        type: 'image',
+        contentUrl: finalUrl || `https://picsum.photos/seed/${Date.now()}/1080/1080`,
+        caption,
+        likes: [],
+        comments: [],
+        shares: 0,
+        views: 0,
+        timestamp: Date.now()
+      };
+      onPostCreated(newPost);
     }
 
     setIsUploading(false);
@@ -166,181 +166,333 @@ const UploadModal: React.FC<UploadModalProps> = ({ user, onClose, onPostCreated,
   };
 
   const uploadOptions = [
-    { type: 'post' as UploadType, icon: Image, label: 'Post', color: 'from-indigo-500 to-purple-500', desc: 'Photo ou vidéo' },
-    { type: 'story' as UploadType, icon: Instagram, label: 'Story', color: 'from-pink-500 to-orange-500', desc: 'Disparaît dans 24h' },
-    { type: 'reel' as UploadType, icon: Film, label: 'Reel', color: 'from-rose-500 to-pink-500', desc: 'Court vidéo' },
-    { type: 'video' as UploadType, icon: Video, label: 'Vidéo', color: 'from-blue-500 to-cyan-500', desc: 'Vidéo longue' },
+    { type: 'post' as UploadType, icon: Image, label: 'Post', color: 'from-indigo-500 via-purple-500 to-pink-500', desc: 'Photo pour vos abonnés', iconBg: 'bg-indigo-500' },
+    { type: 'news' as UploadType, icon: Globe, label: 'Actualité', color: 'from-blue-500 via-cyan-500 to-teal-500', desc: 'News & Informations', iconBg: 'bg-blue-500' },
+    { type: 'story' as UploadType, icon: Instagram, label: 'Story', color: 'from-pink-500 via-rose-500 to-orange-500', desc: 'Disparaît dans 24h', iconBg: 'bg-pink-500' },
+    { type: 'reel' as UploadType, icon: Film, label: 'Reel', color: 'from-rose-500 via-red-500 to-orange-500', desc: 'Vidéo virale', iconBg: 'bg-rose-500' },
+    { type: 'video' as UploadType, icon: Video, label: 'Vidéo', color: 'from-violet-500 via-purple-500 to-indigo-500', desc: 'Contenu long', iconBg: 'bg-violet-500' },
   ];
 
   // Selection screen
-  if (!uploadType) {
+  if (step === 'selection') {
     return (
-      <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="w-full max-w-lg">
+      <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
+        {/* Animated background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 -left-20 w-80 h-80 bg-gradient-to-r from-indigo-500/30 to-purple-500/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-gradient-to-r from-pink-500/30 to-rose-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full blur-3xl animate-pulse delay-500" />
+        </div>
+
+        <div className="relative w-full max-w-md">
+          {/* Header */}
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-white">Créer</h2>
-            <button onClick={onClose} className="p-2 bg-gray-800 rounded-full hover:bg-gray-700">
-              <X className="w-6 h-6 text-white" />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white">Créer</h2>
+                <p className="text-gray-400 text-sm">Partagez avec le monde</p>
+              </div>
+            </div>
+            <button 
+              onClick={onClose} 
+              className="p-3 bg-white/10 backdrop-blur rounded-xl hover:bg-white/20 transition-all border border-white/10"
+            >
+              <X className="w-5 h-5 text-white" />
             </button>
           </div>
 
+          {/* Options Grid */}
           <div className="grid grid-cols-2 gap-4">
-            {uploadOptions.map((option) => (
+            {uploadOptions.map((option, index) => (
               <button
                 key={option.type}
-                onClick={() => setUploadType(option.type)}
-                className={`p-6 rounded-2xl bg-gradient-to-br ${option.color} hover:scale-105 transition-transform`}
+                onClick={() => {
+                  setUploadType(option.type);
+                  setStep('create');
+                }}
+                className={`group relative p-6 rounded-2xl bg-gradient-to-br ${option.color} hover:scale-105 transition-all duration-300 shadow-xl hover:shadow-2xl overflow-hidden`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                <option.icon className="w-12 h-12 text-white mx-auto mb-3" />
-                <h3 className="text-xl font-bold text-white text-center">{option.label}</h3>
-                <p className="text-white/70 text-sm text-center mt-1">{option.desc}</p>
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                
+                <div className={`w-14 h-14 ${option.iconBg} rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <option.icon className="w-7 h-7 text-white" />
+                </div>
+                
+                <h3 className="text-xl font-bold text-white mb-1">{option.label}</h3>
+                <p className="text-white/70 text-sm">{option.desc}</p>
+                
+                {/* Arrow indicator */}
+                <div className="absolute bottom-4 right-4 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:translate-x-0 -translate-x-2 transition-all duration-300">
+                  <ArrowRight className="w-4 h-4 text-white" />
+                </div>
               </button>
             ))}
+          </div>
+
+          {/* Quick actions */}
+          <div className="mt-6 flex justify-center gap-4">
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+              <Zap className="w-4 h-4" />
+              <span>Publication instantanée</span>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Creation form
   return (
-    <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-lg glass rounded-2xl overflow-hidden border border-white/20 max-h-[90vh] overflow-y-auto">
-        <div className="p-4 border-b border-white/10 flex items-center justify-between sticky top-0 bg-black/80 backdrop-blur z-10">
-          <button onClick={() => setUploadType(null)} className="text-white hover:text-gray-300">
-            ← Retour
-          </button>
-          <h2 className="font-bold text-lg text-white">
-            {uploadType === 'post' && 'Nouveau Post'}
-            {uploadType === 'story' && 'Nouvelle Story'}
-            {uploadType === 'reel' && 'Nouveau Reel'}
-            {uploadType === 'video' && 'Nouvelle Vidéo'}
-          </h2>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full">
-            <X className="w-5 h-5 text-white" />
-          </button>
+    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-indigo-500/10 via-transparent to-purple-500/10" />
+      </div>
+
+      <div className="relative w-full max-w-lg">
+        {/* Glass form container */}
+        <div className="glass-form rounded-3xl overflow-hidden border border-white/10 shadow-2xl max-h-[90vh] overflow-y-auto">
+          {/* Header */}
+          <div className="sticky top-0 bg-black/50 backdrop-blur-xl border-b border-white/10 p-4 flex items-center justify-between z-10">
+            <button 
+              onClick={() => setStep('selection')} 
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+                <ArrowRight className="w-4 h-4 rotate-180" />
+              </div>
+              <span>Retour</span>
+            </button>
+            
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                uploadType === 'post' ? 'bg-indigo-500' :
+                uploadType === 'news' ? 'bg-blue-500' :
+                uploadType === 'story' ? 'bg-pink-500' :
+                uploadType === 'reel' ? 'bg-rose-500' :
+                'bg-violet-500'
+              }`}>
+                {uploadType === 'post' && <Image className="w-4 h-4 text-white" />}
+                {uploadType === 'news' && <Globe className="w-4 h-4 text-white" />}
+                {uploadType === 'story' && <Instagram className="w-4 h-4 text-white" />}
+                {uploadType === 'reel' && <Film className="w-4 h-4 text-white" />}
+                {uploadType === 'video' && <Video className="w-4 h-4 text-white" />}
+              </div>
+              <h2 className="font-bold text-lg text-white">
+                {uploadType === 'post' && 'Nouveau Post'}
+                {uploadType === 'news' && 'Nouvelle Actualité'}
+                {uploadType === 'story' && 'Nouvelle Story'}
+                {uploadType === 'reel' && 'Nouveau Reel'}
+                {uploadType === 'video' && 'Nouvelle Vidéo'}
+              </h2>
+            </div>
+            
+            <button 
+              onClick={onClose} 
+              className="p-2 bg-white/10 rounded-lg hover:bg-white/20 transition-all"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            {/* Category for news */}
+            {uploadType === 'news' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Type d'actualité</option>
+                  <option value="Sport">Sport</option>
+                  <option value="Info">Info</option>
+                  <option value="Savoir">Savoir</option>
+                  <option value="Divers">Divers</option>
+                </select>
+              </div>
+            )}
+
+            {/* Media type for story */}
+            {uploadType === 'story' && (
+              <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setMediaType('image')}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    mediaType === 'image' 
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Image
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMediaType('video')}
+                  className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                    mediaType === 'video' 
+                      ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Vidéo
+                </button>
+              </div>
+            )}
+
+            {/* Drop zone / Preview */}
+            <div
+              className={`relative rounded-2xl overflow-hidden transition-all duration-300 ${
+                dragActive 
+                  ? 'border-2 border-indigo-500 bg-indigo-500/10' 
+                  : 'border-2 border-dashed border-white/20 hover:border-white/40'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              {previewUrl ? (
+                <div className="relative">
+                  {mediaType === 'image' || uploadType === 'post' || uploadType === 'reel' || uploadType === 'news' ? (
+                    <img src={previewUrl} alt="Preview" className="w-full h-56 object-contain bg-black/50" />
+                  ) : (
+                    <video src={previewUrl} className="w-full h-56 object-contain bg-black/50" controls />
+                  )}
+                  <button
+                    type="button"
+                    onClick={clearFile}
+                    className="absolute top-3 right-3 p-2 bg-black/60 backdrop-blur rounded-full hover:bg-black/80 transition-all"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                  
+                  {/* Stats overlay */}
+                  <div className="absolute bottom-3 left-3 right-3 flex justify-center gap-6">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur rounded-full">
+                      <Heart className="w-4 h-4 text-white/80" />
+                      <span className="text-white/80 text-xs">0</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur rounded-full">
+                      <MessageCircle className="w-4 h-4 text-white/80" />
+                      <span className="text-white/80 text-xs">0</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/60 backdrop-blur rounded-full">
+                      <Share2 className="w-4 h-4 text-white/80" />
+                      <span className="text-white/80 text-xs">0</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-12 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
+                    <Upload className="w-8 h-8 text-indigo-400" />
+                  </div>
+                  <p className="text-white mb-2">Glissez-déposez votre média</p>
+                  <p className="text-gray-400 text-sm">ou</p>
+                </div>
+              )}
+            </div>
+
+            {/* File input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*,video/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white font-medium flex items-center justify-center gap-2 hover:bg-white/10 transition-all"
+            >
+              <Image className="w-5 h-5" />
+              {selectedFile ? 'Changer le fichier' : 'Sélectionner depuis la galerie'}
+            </button>
+
+            {/* Title for news */}
+            {uploadType === 'news' && category && (
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Titre de l'actualité"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            )}
+
+            {/* Caption */}
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder={uploadType === 'news' ? "Détaillez l'actualité..." : "Légende..."}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 min-h-28 resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+            />
+
+            {/* Source for news */}
+            {uploadType === 'news' && category && (
+              <input
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder="Source (lien optionnel)"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            )}
+
+            {/* URL fallback */}
+            {!selectedFile && (
+              <input
+                value={contentUrl}
+                onChange={(e) => setContentUrl(e.target.value)}
+                placeholder="Ou collez une URL..."
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            )}
+
+            {/* Submit button */}
+            <button
+              type="submit"
+              disabled={isUploading || (!contentUrl && !selectedFile)}
+              className="w-full py-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl font-bold text-white disabled:opacity-50 hover:shadow-lg hover:shadow-indigo-500/30 transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {isUploading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Publication...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-5 h-5" />
+                  Publier maintenant
+                </>
+              )}
+            </button>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 space-y-4">
-          {/* Category selection for news */}
-          {uploadType === 'post' && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">Catégorie</label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-gray-800 rounded-lg px-4 py-2 text-white border border-gray-700"
-              >
-                <option value="">Post normal</option>
-                <option value="Sport">Sport</option>
-                <option value="Info">Info</option>
-                <option value="Savoir">Savoir</option>
-                <option value="Divers">Divers</option>
-              </select>
-            </div>
-          )}
-
-          {/* Media type selector for story */}
-          {uploadType === 'story' && (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setMediaType('image')}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium ${mediaType === 'image' ? 'bg-indigo-600' : 'bg-gray-700'} text-white`}
-              >
-                Image
-              </button>
-              <button
-                type="button"
-                onClick={() => setMediaType('video')}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium ${mediaType === 'video' ? 'bg-indigo-600' : 'bg-gray-700'} text-white`}
-              >
-                Vidéo
-              </button>
-            </div>
-          )}
-
-          {/* File Preview */}
-          {previewUrl && (
-            <div className="relative rounded-lg overflow-hidden bg-black/50">
-              {mediaType === 'image' || uploadType === 'post' || uploadType === 'reel' ? (
-                <img src={previewUrl} alt="Preview" className="w-full h-48 object-contain" />
-              ) : (
-                <video src={previewUrl} className="w-full h-48 object-contain" controls />
-              )}
-              <button
-                type="button"
-                onClick={clearFile}
-                className="absolute top-2 right-2 p-1 bg-black/70 rounded-full hover:bg-black/90"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
-          )}
-
-          {/* Title for news */}
-          {uploadType === 'post' && category && (
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Titre de l'article"
-              className="w-full bg-gray-800 rounded-lg px-4 py-3 text-white border border-gray-700"
-            />
-          )}
-
-          {/* Caption */}
-          <textarea
-            value={caption}
-            onChange={(e) => setCaption(e.target.value)}
-            placeholder={uploadType === 'post' ? "Légende..." : "Décrivez votre contenu..."}
-            className="w-full bg-gray-800 rounded-lg px-4 py-3 text-white border border-gray-700 min-h-24"
-          />
-
-          {/* Source for news */}
-          {uploadType === 'post' && category && (
-            <input
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              placeholder="Source (lien)"
-              className="w-full bg-gray-800 rounded-lg px-4 py-3 text-white border border-gray-700"
-            />
-          )}
-
-          {/* URL Input */}
-          {!selectedFile && (
-            <input
-              value={contentUrl}
-              onChange={(e) => setContentUrl(e.target.value)}
-              placeholder="URL de l'image ou vidéo"
-              className="w-full bg-gray-800 rounded-lg px-4 py-3 text-white border border-gray-700"
-            />
-          )}
-
-          {/* File input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*,video/*"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-full py-3 bg-gray-800 rounded-lg text-white font-medium flex items-center justify-center gap-2 hover:bg-gray-700"
-          >
-            <Image className="w-5 h-5" />
-            {selectedFile ? 'Changer le fichier' : 'Sélectionner depuis la galerie'}
-          </button>
-
-          <button
-            type="submit"
-            disabled={isUploading || (!contentUrl && !selectedFile)}
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 py-3 rounded-xl font-bold text-white disabled:opacity-50"
-          >
-            {isUploading ? 'Publication...' : 'Publier'}
-          </button>
-        </form>
+        {/* Tips */}
+        <div className="mt-4 text-center text-gray-400 text-sm">
+          <span className="flex items-center justify-center gap-2">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            Conseil: Les publications avec images reçoivent 2x plus d'engagement
+          </span>
+        </div>
       </div>
+
+      <style>{`
+        .glass-form {
+          background: rgba(255, 255, 255, 0.05);
+          backdrop-filter: blur(40px);
+          -webkit-backdrop-filter: blur(40px);
+        }
+      `}</style>
     </div>
   );
 };
