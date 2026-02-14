@@ -1,142 +1,286 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Play, ShoppingBag, MessageCircle, User, Bell, Search, Newspaper, Moon, Sun, Radio, CheckCircle2, Plus } from 'lucide-react';
-import { VisionNotification } from '../types';
-import { formatTimeAgo } from '../utils/time';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Home, Compass, Heart, MessageCircle, ShoppingBag, Video, User, Settings, LogOut, Moon, Sun, Bell, Search, Menu, X } from 'lucide-react';
+import { User as UserType, VisionNotification } from '../types';
 
 interface LayoutProps {
   children: React.ReactNode;
-  user: any;
+  user: UserType;
   theme: 'light' | 'dark';
-  setTheme: (t: 'light' | 'dark') => void;
+  setTheme: (theme: 'light' | 'dark') => void;
   notifications: VisionNotification[];
   onClearNotifications: () => void;
-  onNotificationClick?: (notif: VisionNotification) => void;
+  onLogout: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifications, onClearNotifications, onNotificationClick }) => {
+const Layout: React.FC<LayoutProps> = ({ children, user, theme, setTheme, notifications, onClearNotifications, onLogout }) => {
   const location = useLocation();
-  const [notifOpen, setNotifOpen] = useState(false);
-  const notifRef = useRef<HTMLDivElement>(null);
-  const isActive = (path: string) => location.pathname === path;
+  const [showNotifications, setShowNotifications] = React.useState(false);
+  const [showSettings, setShowSettings] = React.useState(false);
+  const [showMobileMenu, setShowMobileMenu] = React.useState(false);
+  const [isSearching, setIsSearching] = React.useState(false);
 
-  // Theme classes
-  const isDark = theme === 'dark';
-  const bgGradient = isDark
-    ? 'bg-gradient-to-b from-gray-900 via-gray-800 to-black'
-    : 'bg-gradient-to-b from-gray-100 via-white to-gray-200';
-  const glassBg = isDark ? 'bg-black/40' : 'bg-white/80';
-  const glassBorder = isDark ? 'border-white/10' : 'border-gray-200';
-  const textPrimary = isDark ? 'text-white' : 'text-gray-900';
-  const textSecondary = isDark ? 'text-gray-400' : 'text-gray-600';
-  const navActive = 'text-white';
+  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
 
   const navItems = [
     { path: '/', icon: Home, label: 'Accueil' },
-    { path: '/reels', icon: Play, label: 'Reels' },
-    { path: '/actualite', icon: Newspaper, label: 'Actualité' },
+    { path: '/reels', icon: Compass, label: 'Reels' },
+    { path: '/actualite', icon: Search, label: 'Actualité' },
     { path: '/shop', icon: ShoppingBag, label: 'Boutique' },
     { path: '/messenger', icon: MessageCircle, label: 'Messages' },
-    { path: '/live', icon: Radio, label: 'Live' },
+    { path: '/live', icon: Video, label: 'Live' },
+    { path: '/profile', icon: User, label: 'Profil' },
   ];
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
-        setNotifOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const isReelsPage = location.pathname === '/reels';
+  const isLivePage = location.pathname === '/live';
 
   return (
-    <div className={`min-h-screen relative transition-colors duration-300 ${bgGradient}`}>
-      {/* Header - Mobile Only */}
-      <header className={`md:hidden fixed top-0 left-0 right-0 z-[60] ${glassBg} px-4 py-3 flex items-center justify-between border-b ${glassBorder}`}>
-        <Link to="/profile" className="relative">
-          <img src={user.avatar} className="w-8 h-8 rounded-full object-cover" alt="Profil" />
-        </Link>
-        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-          V
+    <div className={`${theme === 'dark' ? 'dark bg-gray-900' : 'bg-gray-50'} min-h-screen transition-colors duration-300`}>
+      {/* Header - Fixed top with profile photo and logo */}
+      <header className={`fixed top-0 left-0 right-0 z-50 ${theme === 'dark' ? 'bg-gray-900/95 backdrop-blur-sm border-b border-gray-700' : 'bg-white/95 backdrop-blur-sm border-b border-gray-200'} shadow-sm`}>
+        <div className="flex items-center justify-between h-16 px-4">
+          {/* Left: Profile Photo + Logo */}
+          <div className="flex items-center gap-3">
+            {/* Profile Photo */}
+            <button
+              onClick={() => window.location.href = '/profile'}
+              className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-indigo-500 hover:ring-indigo-600 transition-all"
+            >
+              <img
+                src={user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            </button>
+            
+            {/* Logo */}
+            <div className="flex items-center">
+              <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Vision</span>
+              </h1>
+            </div>
+          </div>
+
+          {/* Center: Search Bar - Hidden on small screens */}
+          <div className={`hidden md:flex flex-1 max-w-md mx-4 ${isSearching ? '' : 'justify-center'}`}>
+            {isSearching ? (
+              <div className={`flex items-center w-full px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                <Search className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mr-2`} />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  autoFocus
+                  onBlur={() => setIsSearching(false)}
+                  className={`flex-1 bg-transparent outline-none ${theme === 'dark' ? 'text-white placeholder-gray-400' : 'text-gray-900 placeholder-gray-500'}`}
+                />
+                <button onClick={() => setIsSearching(false)} className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsSearching(true)}
+                className={`flex items-center px-4 py-2 rounded-full ${theme === 'dark' ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'} transition-colors`}
+              >
+                <Search className={`w-4 h-4 mr-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Rechercher...</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-2">
+            {/* Notifications */}
+            <div className="relative">
+              <button
+                onClick={() => { setShowNotifications(!showNotifications); setShowSettings(false); }}
+                className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors relative`}
+              >
+                <Bell className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+
+              {showNotifications && (
+                <div className={`absolute right-0 top-full mt-2 w-80 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl z-50`}>
+                  <div className={`p-3 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
+                    <span className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Notifications</span>
+                    {notifications.length > 0 && (
+                      <button onClick={onClearNotifications} className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} hover:text-indigo-500`}>
+                        Effacer
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-64 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <p className={`p-4 text-center ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Aucune notification</p>
+                    ) : (
+                      notifications.map((notif, i) => (
+                        <div key={i} className={`p-3 border-b ${theme === 'dark' ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-100 hover:bg-gray-50'} ${!notif.read ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}>
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>{notif.message}</p>
+                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>{notif.timestamp}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Settings */}
+            <div className="relative">
+              <button
+                onClick={() => { setShowSettings(!showSettings); setShowNotifications(false); }}
+                className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+              >
+                <Settings className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+              </button>
+
+              {showSettings && (
+                <div className={`absolute right-0 top-full mt-2 w-56 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border rounded-xl shadow-xl z-50 overflow-hidden`}>
+                  <div className={`p-2 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+                    <p className={`text-sm font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{user.name}</p>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{user.email}</p>
+                  </div>
+                  
+                  {/* Lighting/Eclairage Option */}
+                  <button
+                    onClick={toggleTheme}
+                    className={`w-full flex items-center gap-3 p-3 ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}
+                  >
+                    {theme === 'light' ? (
+                      <>
+                        <Moon className="w-5 h-5 text-indigo-500" />
+                        <span className="text-gray-900">Mode Sombre</span>
+                      </>
+                    ) : (
+                      <>
+                        <Sun className="w-5 h-5 text-yellow-500" />
+                        <span className="text-white">Mode Clair</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Déconnexion */}
+                  <button
+                    onClick={onLogout}
+                    className={`w-full flex items-center gap-3 p-3 ${theme === 'dark' ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-600'} transition-colors`}
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Déconnexion</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className={`md:hidden p-2 rounded-full ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} transition-colors`}
+            >
+              <Menu className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+            </button>
+          </div>
         </div>
-        <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-1">
-          <Bell className={`w-5 h-5 ${textSecondary}`} />
-          {notifications.filter(n => !n.read).length > 0 && (
-            <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
-          )}
-        </button>
       </header>
 
-      {/* Main Content - Full Screen */}
-      <main className="md:pl-20 pt-16 md:pt-4 pb-20 md:pb-0 h-screen overflow-hidden">
-        <div className="h-full overflow-y-auto scrollbar-hide">
+      {/* Mobile Menu Overlay */}
+      {showMobileMenu && (
+        <div className={`fixed inset-0 z-50 md:hidden ${theme === 'dark' ? 'bg-black/90' : 'bg-black/80'}`} onClick={() => setShowMobileMenu(false)}>
+          <div className={`absolute top-16 left-0 right-0 ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'} shadow-xl`} onClick={(e) => e.stopPropagation()}>
+            <nav className="p-2">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setShowMobileMenu(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive
+                        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                        : `${theme === 'dark' ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-700'}`
+                    }`
+                  }
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className={`${isReelsPage || isLivePage ? '' : 'pt-16'} pb-20 md:pb-6`}>
+        <div className={isReelsPage || isLivePage ? '' : 'max-w-2xl mx-auto px-4'}>
           {children}
         </div>
       </main>
 
-      {/* Right Navigation - Desktop TikTok Style */}
-      <aside className="hidden md:flex flex-col fixed right-4 top-1/2 -translate-y-1/2 z-[50] gap-4">
-        {/* Profile */}
-        <Link to="/profile" className="flex flex-col items-center gap-1">
-          <img src={user.avatar} className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500" alt="Profil" />
-        </Link>
-
-        <div className="w-8 h-px bg-gray-700"></div>
-
-        {/* Navigation Icons */}
+      {/* Desktop Navigation - Hidden on mobile */}
+      <nav className={`hidden md:flex fixed bottom-6 left-1/2 -translate-x-1/2 ${theme === 'dark' ? 'bg-gray-800/95' : 'bg-white/95'} backdrop-blur-sm rounded-full shadow-xl shadow-black/20 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} px-2 py-2 gap-1 z-50`}>
         {navItems.map((item) => (
-          <Link key={item.path} to={item.path} className="flex flex-col items-center gap-1 group">
-            <div className={`p-3 rounded-full transition-all ${isActive(item.path) ? 'bg-rose-500' : 'hover:bg-white/10'}`}>
-              <item.icon className={`w-6 h-6 ${isActive(item.path) ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
-            </div>
-            {isActive(item.path) && <span className="text-[10px] text-rose-500 font-medium">{item.label}</span>}
-          </Link>
-        ))}
-
-        {/* Theme Toggle */}
-        <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} className="flex flex-col items-center gap-1 group">
-          <div className="p-3 rounded-full hover:bg-white/10 transition-all">
-            {theme === 'light' ? <Moon className="w-6 h-6 text-gray-400 group-hover:text-gray-600" /> : <Sun className="w-6 h-6 text-yellow-400" />}
-          </div>
-        </button>
-      </aside>
-
-      {/* Bottom Navigation - Mobile */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-16 glass flex items-center justify-around z-50 border-t border-white/10" style={{ backgroundColor: isDark ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)' }}>
-        {navItems.map((item) => (
-          <Link key={item.path} to={item.path} className="flex flex-col items-center justify-center w-14 h-14">
-            <item.icon className={`w-6 h-6 ${isActive(item.path) ? 'text-rose-500' : 'text-gray-400'}`} />
-          </Link>
+          <NavLink
+            key={item.path}
+            to={item.path}
+            className={({ isActive }) =>
+              `p-3 rounded-full transition-all ${
+                isActive
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : `${theme === 'dark' ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-900'}`
+              }`
+            }
+          >
+            <item.icon className="w-5 h-5" />
+          </NavLink>
         ))}
       </nav>
 
-      {/* Notifications Modal */}
-      {notifOpen && (
-        <div className="fixed inset-0 z-[100] flex items-start justify-end" onClick={() => setNotifOpen(false)}>
-          <div ref={notifRef} className="w-full max-w-sm h-full glass border-l border-white/10 overflow-hidden" style={{ backgroundColor: isDark ? 'rgba(20, 20, 20, 0.95)' : 'rgba(255, 255, 255, 0.95)' }} onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-white/10 flex justify-between items-center">
-              <h3 className="font-bold text-white">Notifications</h3>
-              <button onClick={onClearNotifications} className="text-xs text-gray-400">Effacer</button>
+      {/* Mobile Bottom Navigation */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 ${theme === 'dark' ? 'bg-gray-900/95 border-t border-gray-800' : 'bg-white/95 border-t border-gray-200'} backdrop-blur-sm z-50`}>
+        <div className="flex justify-around py-2">
+          {navItems.slice(0, 5).map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
+                  isActive
+                    ? 'text-indigo-600 dark:text-indigo-400'
+                    : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
+                }`
+              }
+            >
+              <item.icon className="w-5 h-5" />
+              <span className="text-xs">{item.label}</span>
+            </NavLink>
+          ))}
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 px-3 py-1 transition-colors ${
+                isActive
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : `${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`
+              }`
+            }
+          >
+            <div className="w-6 h-6 rounded-full overflow-hidden">
+              <img
+                src={user.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop"}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
             </div>
-            <div className="overflow-y-auto h-full pb-20">
-              {notifications.length === 0 ? (
-                <div className="p-8 text-center text-gray-500">
-                  <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p className="text-sm">Aucune notification</p>
-                </div>
-              ) : (
-                notifications.map((n) => (
-                  <div key={n.id} onClick={() => { onNotificationClick?.(n); setNotifOpen(false); }} className={`p-4 border-b border-white/5 hover:bg-white/5 cursor-pointer ${!n.read ? 'bg-indigo-500/10' : ''}`}>
-                    <p className="text-sm font-medium text-white">{n.message}</p>
-                    <p className="text-xs text-gray-400 mt-1">{formatTimeAgo(parseInt(n.timestamp))}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+            <span className="text-xs">Profil</span>
+          </NavLink>
         </div>
-      )}
+      </nav>
     </div>
   );
 };

@@ -14,7 +14,7 @@ import LiveStream from './components/LiveStream';
 import AdminDashboard from './components/AdminDashboard';
 import Auth from './components/Auth';
 import { INITIAL_POSTS, INITIAL_STORIES } from './constants';
-import { Plus, Zap } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Post, Story, User, VisionNotification } from './types';
 import { syncWithCloud, CloudState } from './services/syncService';
 
@@ -51,7 +51,7 @@ const AppContent: React.FC = () => {
   const [notifications, setNotifications] = useState<VisionNotification[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const saved = localStorage.getItem('vision_theme');
-    return (saved as 'light' | 'dark') || 'dark';
+    return (saved as 'light' | 'dark') || 'light';
   });
 
   // Save theme preference
@@ -139,21 +139,17 @@ const AppContent: React.FC = () => {
   if (!user) return <Auth onLogin={setUser} />;
 
   return (
-    <Layout user={user} theme={theme} setTheme={setTheme} notifications={notifications} onClearNotifications={() => setNotifications([])}>
-      <div className="fixed top-[70px] left-0 right-0 z-[55] flex justify-center pointer-events-none">
-        <div className={`px-4 py-1.5 rounded-full glass border border-white/10 flex items-center gap-2 transition-all duration-500 ${isSyncing ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'}`}>
-          <Zap className="w-4 h-4 text-indigo-500 animate-pulse" />
-          <span className="text-xs font-medium text-indigo-400">Sync...</span>
-        </div>
-      </div>
-
+    <Layout user={user} theme={theme} setTheme={setTheme} notifications={notifications} onClearNotifications={() => setNotifications([])} onLogout={logout}>
       <Routes>
         <Route path="/" element={
           <div className="space-y-4 pt-2">
             <StoryBar stories={stories} user={user} onAddStory={() => setIsUploadOpen(true)} onViewStory={setActiveStoryUserId} />
             {posts.filter(p => p && !p.category && p.type !== 'reel').map(post => (
               <PostCard
-                key={post.id} post={post} currentUserId={user.id} isAdmin={user.isAdmin}
+                key={post.id}
+                post={post}
+                currentUserId={user.id}
+                isAdmin={user.isAdmin}
                 onLike={() => handleLikePost(post.id)}
                 onComment={(text) => handleComment(post.id, text)}
                 onShare={() => {}}
@@ -163,21 +159,64 @@ const AppContent: React.FC = () => {
             ))}
           </div>
         } />
-        <Route path="/reels" element={<Reels reels={posts.filter(p => p.type === 'reel')} currentUserId={user.id} onLike={handleLikePost} onComment={() => {}} onShare={() => {}} />} />
-        <Route path="/actualite" element={<Actualite newsPosts={posts.filter(p => !!p.category)} user={user} onArticleCreated={handleCreatePost} onLike={handleLikePost} onComment={handleComment} onShare={() => {}} onView={() => {}} />} />
+        <Route path="/reels" element={
+          <Reels
+            reels={posts.filter(p => p.type === 'reel')}
+            currentUserId={user.id}
+            onLike={handleLikePost}
+            onComment={() => {}}
+            onShare={() => {}}
+          />
+        } />
+        <Route path="/actualite" element={
+          <Actualite
+            newsPosts={posts.filter(p => !!p.category)}
+            user={user}
+            onArticleCreated={handleCreatePost}
+            onLike={handleLikePost}
+            onComment={handleComment}
+            onShare={() => {}}
+            onView={() => {}}
+          />
+        } />
         <Route path="/shop" element={<Shop products={products} onProductsUpdate={setProducts} />} />
         <Route path="/messenger" element={<Messenger user={user} />} />
         <Route path="/live" element={<LiveStream user={user} />} />
-        <Route path="/profile" element={<Profile userPosts={posts} user={user} onUpdateUser={(u) => setUser(prev => prev ? { ...prev, ...u } : null)} onPostClick={setSelectedPostId} onViewStories={() => setActiveStoryUserId(user.id)} onLikePost={handleLikePost} onCommentPost={handleComment} onSharePost={() => {}} onLogout={logout} />} />
+        <Route path="/profile" element={
+          <Profile
+            userPosts={posts}
+            user={user}
+            onUpdateUser={(u) => setUser(prev => prev ? { ...prev, ...u } : null)}
+            onPostClick={setSelectedPostId}
+            onViewStories={() => setActiveStoryUserId(user.id)}
+            onLikePost={handleLikePost}
+            onCommentPost={handleComment}
+            onSharePost={() => {}}
+            onLogout={logout}
+            onOpenSettings={() => {}}
+          />
+        } />
         <Route path="/admin" element={<AdminDashboard user={user} />} />
       </Routes>
 
-      <button onClick={() => setIsUploadOpen(true)} className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-indigo-500/30 hover:scale-110 active:scale-95 transition-all z-[60]">
+      <button
+        onClick={() => setIsUploadOpen(true)}
+        className="fixed bottom-24 md:bottom-6 right-6 w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 text-white rounded-full flex items-center justify-center shadow-xl shadow-indigo-500/30 hover:scale-110 active:scale-95 transition-all z-[60]"
+      >
         <Plus className="w-6 h-6" />
       </button>
 
-      {isUploadOpen && <UploadModal user={user} onClose={() => setIsUploadOpen(false)} onPostCreated={handleCreatePost} onStoryCreated={(s) => setStories(prev => [s, ...prev])} />}
-      {activeStoryUserId && <StoryViewer stories={stories.filter(s => s.user.id === activeStoryUserId)} onClose={() => setActiveStoryUserId(null)} />}
+      {isUploadOpen && (
+        <UploadModal
+          user={user}
+          onClose={() => setIsUploadOpen(false)}
+          onPostCreated={handleCreatePost}
+          onStoryCreated={(s) => setStories(prev => [s, ...prev])}
+        />
+      )}
+      {activeStoryUserId && (
+        <StoryViewer stories={stories.filter(s => s.user.id === activeStoryUserId)} onClose={() => setActiveStoryUserId(null)} />
+      )}
     </Layout>
   );
 };

@@ -9,10 +9,54 @@ export interface CloudState {
   messages: any[];
 }
 
-// Synchronisation avec Supabase
+// Flag to track if Supabase is connected
+let supabaseConnected = true;
+
+// Test Supabase connection
+export const testSupabaseConnection = async (): Promise<boolean> => {
+  try {
+    const { error } = await supabase.from('posts').select('count').limit(1);
+    if (error) {
+      supabaseConnected = false;
+      return false;
+    }
+    supabaseConnected = true;
+    return true;
+  } catch {
+    supabaseConnected = false;
+    return false;
+  }
+};
+
+// Synchronisation avec Supabase (avec fallback vers localStorage)
 export const syncWithCloud = async (localState: Partial<CloudState>): Promise<CloudState | null> => {
   try {
-    // 1. Récupération de l'état cloud actuel depuis Supabase
+    // Si Supabase n'est pas connecté, retourner l'état local
+    if (!supabaseConnected) {
+      console.log('Supabase non connecté - utilisation du stockage local');
+      return {
+        posts: localState.posts || [],
+        users: localState.users || [],
+        stories: localState.stories || [],
+        products: localState.products || [],
+        messages: localState.messages || []
+      };
+    }
+
+    // Tentative de connexion à Supabase
+    const connectionTest = await testSupabaseConnection();
+    if (!connectionTest) {
+      supabaseConnected = false;
+      return {
+        posts: localState.posts || [],
+        users: localState.users || [],
+        stories: localState.stories || [],
+        products: localState.products || [],
+        messages: localState.messages || []
+      };
+    }
+
+    // Récupération de l'état cloud depuis Supabase
     const [postsResult, usersResult, storiesResult, productsResult, messagesResult] = await Promise.all([
       supabase.from('posts').select('*').order('timestamp', { ascending: false }).limit(50),
       supabase.from('users').select('*'),
@@ -31,7 +75,7 @@ export const syncWithCloud = async (localState: Partial<CloudState>): Promise<Cl
       messages: messagesResult.data || []
     };
 
-    // 2. Fusion intelligente (Merge)
+    // Fusion intelligente (Merge)
     const updatedState: CloudState = {
       posts: mergeItems(cloudState.posts, localState.posts || []),
       users: mergeItems(cloudState.users, localState.users || []),
@@ -40,7 +84,7 @@ export const syncWithCloud = async (localState: Partial<CloudState>): Promise<Cl
       messages: mergeItems(cloudState.messages, localState.messages || [])
     };
 
-    // 3. Sauvegarde sur Supabase (Push) si données locales présentes
+    // Sauvegarde sur Supabase (Push) si données locales présentes
     if (localState.posts?.length || localState.users?.length || localState.messages?.length) {
       await pushToSupabase(localState);
     }
@@ -48,12 +92,22 @@ export const syncWithCloud = async (localState: Partial<CloudState>): Promise<Cl
     return updatedState;
   } catch (error) {
     console.error("Vision Cloud Engine Error:", error);
-    return null;
+    supabaseConnected = false;
+    // Fallback vers données locales en cas d'erreur
+    return {
+      posts: localState.posts || [],
+      users: localState.users || [],
+      stories: localState.stories || [],
+      products: localState.products || [],
+      messages: localState.messages || []
+    };
   }
 };
 
 // Push des données locales vers Supabase
 async function pushToSupabase(localState: Partial<CloudState>) {
+  if (!supabaseConnected) return;
+
   try {
     // Upsert posts
     if (localState.posts?.length) {
@@ -88,6 +142,7 @@ async function pushToSupabase(localState: Partial<CloudState>) {
     }
   } catch (error) {
     console.error("Push to Supabase Error:", error);
+    supabaseConnected = false;
   }
 }
 
@@ -100,7 +155,7 @@ function transformPostToLocal(dbPost: any): Post {
       firstName: '',
       lastName: '',
       name: dbPost.author_id,
-      avatar: 'https://picsum.photos/seed/' + dbPost.author_id + '/200/200',
+      avatar: dbPost.author_avatar || 'https://picsum.photos/seed/' + dbPost.author_id + '/200/200',
       username: dbPost.author_id,
       followers: [],
       following: []
@@ -123,6 +178,7 @@ function transformPostToDB(post: Post) {
   return {
     id: post.id,
     author_id: post.author.id,
+    author_avatar: post.author.avatar,
     type: post.type,
     content_url: post.contentUrl,
     caption: post.caption,
@@ -181,7 +237,7 @@ function transformStoryToLocal(dbStory: any): Story {
       firstName: '',
       lastName: '',
       name: dbStory.user_id,
-      avatar: 'https://picsum.photos/seed/' + dbStory.user_id + '/200/200',
+      avatar: dbStory.user_avatar || 'https://picsum.photos/seed/' + dbStory.user_id + '/200/200',
       username: dbStory.user_id,
       followers: [],
       following: []
@@ -198,6 +254,7 @@ function transformStoryToDB(story: Story) {
   return {
     id: story.id,
     user_id: story.user.id,
+    user_avatar: story.user.avatar,
     image_url: story.imageUrl,
     type: story.type,
     viewed: story.viewed,
